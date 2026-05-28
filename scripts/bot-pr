@@ -1,0 +1,157 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+export GH_CONFIG_DIR="${GH_CONFIG_DIR:-${XDG_CONFIG_HOME:-${HOME}/.config}/bot-pr/gh}"
+
+BOT_OWNER="${BOT_OWNER:-shravangoswami-bot}"
+BOT_EMAIL="${BOT_EMAIL:-shravangoswami-bot@users.noreply.github.com}"
+COAUTHOR_NAME="${COAUTHOR_NAME:-shravanngoswamii}"
+COAUTHOR_EMAIL="${COAUTHOR_EMAIL:-shravanngoswamii@users.noreply.github.com}"
+
+usage() {
+  cat <<'USAGE'
+Usage:
+  scripts/bot-pr auth
+  scripts/bot-pr auth status
+  scripts/bot-pr auth token
+  scripts/bot-pr gh <gh args...>
+  scripts/bot-pr git <git args...>
+  scripts/bot-pr identity
+  scripts/bot-pr coauthor-hook
+  scripts/bot-pr install
+
+Examples:
+  scripts/bot-pr auth
+  scripts/bot-pr gh repo fork OWNER/REPO --clone=true
+  scripts/bot-pr identity
+  scripts/bot-pr coauthor-hook
+  git add .
+  git commit -m "Update files"
+  scripts/bot-pr git push origin branch-name
+
+Environment:
+  BOT_OWNER   Git commit author name. Default: shravangoswami-bot
+  BOT_EMAIL   Git commit author email.
+  GH_CONFIG_DIR Bot gh config directory. Default: ~/.config/bot-pr/gh
+USAGE
+}
+
+die() {
+  echo "error: $*" >&2
+  exit 1
+}
+
+need() {
+  command -v "$1" >/dev/null 2>&1 || die "$1 is required"
+}
+
+login() {
+  mkdir -p "$GH_CONFIG_DIR"
+  gh auth login --hostname github.com --git-protocol https --scopes repo,workflow
+}
+
+git_with_token() {
+  local token
+  token="$(gh auth token)"
+  GITHUB_TOKEN="$token" git "$@"
+}
+
+set_identity() {
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || die "run this inside a git repo"
+  git config user.name "$BOT_OWNER"
+  git config user.email "$BOT_EMAIL"
+  echo "Git identity set for this repo:"
+  git config user.name
+  git config user.email
+}
+
+install_self() {
+  local bin_dir target source
+  bin_dir="${HOME}/.local/bin"
+  target="${bin_dir}/bot-pr"
+  source="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
+
+  mkdir -p "$bin_dir"
+  ln -sf "$source" "$target"
+  echo "Installed: ${target}"
+  echo "Make sure this is in PATH: ${bin_dir}"
+}
+
+install_coauthor_hook() {
+  local git_dir hook trailer
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || die "run this inside a git repo"
+
+  git_dir="$(git rev-parse --git-dir)"
+  hook="${git_dir}/hooks/prepare-commit-msg"
+  trailer="Co-authored-by: ${COAUTHOR_NAME} <${COAUTHOR_EMAIL}>"
+
+  if [ -f "$hook" ] && ! grep -q "bot-pr coauthor hook" "$hook"; then
+    die "prepare-commit-msg hook already exists; merge this manually: ${hook}"
+  fi
+
+  cat >"$hook" <<EOF
+#!/usr/bin/env bash
+set -euo pipefail
+
+# bot-pr coauthor hook
+trailer='${trailer}'
+msg_file="\$1"
+
+if ! grep -Fqx "\${trailer}" "\${msg_file}"; then
+  {
+    printf '\\n'
+    printf '%s\\n' "\${trailer}"
+  } >>"\${msg_file}"
+fi
+EOF
+
+  chmod +x "$hook"
+  echo "Installed co-author hook: ${hook}"
+  echo "${trailer}"
+}
+
+main() {
+  local cmd="${1:-}"
+  case "$cmd" in
+    auth)
+      need gh
+      shift
+      if [ "$#" -eq 0 ]; then
+        login
+      else
+        gh auth "$@"
+      fi
+      ;;
+    gh)
+      need gh
+      shift
+      gh "$@"
+      ;;
+    git)
+      need gh
+      need git
+      shift
+      git_with_token "$@"
+      ;;
+    identity)
+      need git
+      set_identity
+      ;;
+    coauthor-hook)
+      need git
+      install_coauthor_hook
+      ;;
+    install)
+      install_self
+      ;;
+    ""|-h|--help|help)
+      usage
+      ;;
+    *)
+      usage
+      die "unknown command: $cmd"
+      ;;
+  esac
+}
+
+main "$@"

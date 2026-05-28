@@ -1,0 +1,10 @@
+{
+  "name": "bot-lab",
+  "version": "0.1.0",
+  "private": false,
+  "description": "Tiny local helper for GitHub bot account PRs.",
+  "license": "MIT",
+  "scripts": {
+    "test": "sh -n install.sh && sh -n uninstall.sh && bash -n scripts/bot-pr"
+  }
+}

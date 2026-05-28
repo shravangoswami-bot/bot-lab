@@ -1,0 +1,6 @@
+.gh-bot/
+work/
+*.log
+.env
+*.token
+*token*
