@@ -51,10 +51,11 @@ jobs:
         run: |
           mkdir -p dist/bot-lab
           cp README.md install.sh uninstall.sh package.json dist/bot-lab/
+          cp LICENSE dist/bot-lab/
           mkdir -p dist/bot-lab/scripts
-          cp scripts/bot-pr dist/bot-lab/scripts/
-          cp scripts/bot-pr dist/bot-pr
-          chmod +x dist/bot-pr dist/bot-lab/scripts/bot-pr
+          cp scripts/botlab dist/bot-lab/scripts/
+          cp scripts/botlab dist/botlab
+          chmod +x dist/botlab dist/bot-lab/scripts/botlab
           tar -C dist -czf "bot-lab-${{ steps.version.outputs.tag }}.tar.gz" bot-lab
 
       - name: Tag and release
@@ -71,7 +72,7 @@ jobs:
           gh release create "${{ steps.version.outputs.tag }}" \
             --title "${{ steps.version.outputs.tag }}" \
             --generate-notes \
-            dist/bot-pr \
+            dist/botlab \
             "bot-lab-${{ steps.version.outputs.tag }}.tar.gz" \
             install.sh \
             uninstall.sh

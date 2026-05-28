@@ -1,10 +1,11 @@
 {
-  "name": "bot-lab",
-  "version": "0.1.1",
+  "name": "botlab",
+  "version": "0.2.0",
   "private": false,
   "description": "Tiny local helper for GitHub bot account PRs.",
+  "author": "Shravan Goswami",
   "license": "MIT",
   "scripts": {
-    "test": "sh -n install.sh && sh -n uninstall.sh && bash -n scripts/bot-pr"
+    "test": "sh -n install.sh && sh -n uninstall.sh && bash -n scripts/botlab"
   }
 }

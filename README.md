@@ -1,8 +1,8 @@
 # Bot Lab
 
-Small local setup for making GitHub PRs from `shravangoswami-bot` without changing the main `gh` account.
+Small local helper for making GitHub PRs from `shravangoswami-bot` without changing the main `gh` account.
 
-The script keeps bot GitHub CLI config in `~/.config/bot-pr/gh`. Git stays normal: clone, edit, commit, and push like usual.
+`botlab` keeps bot GitHub CLI config in `~/.config/botlab/gh`. Git stays normal: clone, edit, commit, and push like usual.
 
 ## Install
 
@@ -15,7 +15,7 @@ Re-run the same command later to update. The installer adds `~/.local/bin` to yo
 For local development:
 
 ```bash
-scripts/bot-pr install
+scripts/botlab install
 ```
 
 ## Commands
@@ -23,28 +23,28 @@ scripts/bot-pr install
 ```bash
 cd /home/seeker/Work/vectorly-ai/bot-lab
 
-bot-pr gh auth login
-bot-pr gh auth status
-bot-pr gh repo fork OWNER/REPO --clone=true
+botlab gh auth login
+botlab gh auth status
+botlab gh repo fork OWNER/REPO --clone=true
 ```
 
 Then work with regular git:
 
 ```bash
 cd REPO
-bot-pr identity
-bot-pr coauthor-hook
+botlab identity
+botlab coauthor-hook
 
 git checkout -b branch-name
 git add .
 git commit -m "Update files"
-bot-pr git push origin branch-name
+botlab git push origin branch-name
 ```
 
 Open the PR with bot-scoped `gh`:
 
 ```bash
-bot-pr gh pr create \
+botlab gh pr create \
   --repo OWNER/REPO \
   --head shravangoswami-bot:branch-name \
   --title "Update files" \
@@ -54,20 +54,22 @@ bot-pr gh pr create \
 You can also run git through the script if you prefer:
 
 ```bash
-bot-pr git push origin branch-name
+botlab git push origin branch-name
 ```
 
 ## AI Agent Notes
 
 Use this flow when asked to contribute from the bot account:
 
-1. Run `bot-pr gh auth status`.
-2. Fork or clone using `bot-pr gh ...`.
-3. Run `bot-pr identity` inside the cloned repo.
-4. Run `bot-pr coauthor-hook` inside the cloned repo.
+1. Run `botlab gh auth status`.
+2. Fork or clone using `botlab gh ...`.
+3. Run `botlab identity` inside the cloned repo.
+4. Run `botlab coauthor-hook` inside the cloned repo.
 5. Use normal `git add`, `git commit`, and `git status`.
-6. Push using `bot-pr git push origin branch-name`.
-7. Open PRs using `bot-pr gh pr create ...`.
+6. Push using `botlab git push origin branch-name`.
+7. Open PRs using `botlab gh pr create ...`.
+
+For pure AI-agent work in a bot fork, always use `botlab`. For your own org projects, you can still work directly in the repo; some commits can be authored by you, and bot commits can use `botlab identity` with you as co-author.
 
 Do not use the normal global `gh` config for bot work. Do not print tokens. Keep PR wording simple and mention that the PR is opened by `@shravangoswami-bot` for `@shravanngoswamii`.
 
@@ -80,17 +82,17 @@ Co-authored-by: shravanngoswamii <shravanngoswamii@users.noreply.github.com>
 ## Example
 
 ```bash
-bot-pr gh auth status
-bot-pr gh repo fork TuringLang/AbstractMCMC.jl --clone=true
+botlab gh auth status
+botlab gh repo fork TuringLang/AbstractMCMC.jl --clone=true
 cd AbstractMCMC.jl
-bot-pr identity
-bot-pr coauthor-hook
+botlab identity
+botlab coauthor-hook
 git checkout -b bot/update-readme
 git status
 git add README.md
 git commit -m "Update README"
-bot-pr git push origin bot/update-readme
-bot-pr gh pr create \
+botlab git push origin bot/update-readme
+botlab gh pr create \
   --repo TuringLang/AbstractMCMC.jl \
   --head shravangoswami-bot:bot/update-readme \
   --title "Update README" \
@@ -106,7 +108,7 @@ export BOT_OWNER=shravangoswami-bot
 export BOT_EMAIL=shravangoswami-bot@users.noreply.github.com
 export COAUTHOR_NAME=shravanngoswamii
 export COAUTHOR_EMAIL=shravanngoswamii@users.noreply.github.com
-export GH_CONFIG_DIR=~/.config/bot-pr/gh
+export GH_CONFIG_DIR=~/.config/botlab/gh
 ```
 
 ## Release

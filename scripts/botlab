@@ -1,7 +1,12 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-export GH_CONFIG_DIR="${GH_CONFIG_DIR:-${XDG_CONFIG_HOME:-${HOME}/.config}/bot-pr/gh}"
+VERSION="0.2.0"
+DESCRIPTION="Tiny local helper for GitHub bot account PRs."
+AUTHOR="Shravan Goswami"
+LICENSE="MIT"
+
+export GH_CONFIG_DIR="${GH_CONFIG_DIR:-${XDG_CONFIG_HOME:-${HOME}/.config}/botlab/gh}"
 
 PROG="$(basename "$0")"
 BOT_OWNER="${BOT_OWNER:-shravangoswami-bot}"
@@ -17,6 +22,7 @@ Usage:
   ${PROG} identity
   ${PROG} coauthor-hook
   ${PROG} install
+  ${PROG} version
 
 Examples:
   ${PROG} gh auth login
@@ -31,7 +37,7 @@ Examples:
 Environment:
   BOT_OWNER   Git commit author name. Default: shravangoswami-bot
   BOT_EMAIL   Git commit author email.
-  GH_CONFIG_DIR Bot gh config directory. Default: ~/.config/bot-pr/gh
+  GH_CONFIG_DIR Bot gh config directory. Default: ~/.config/botlab/gh
 USAGE
 }
 
@@ -62,13 +68,13 @@ set_identity() {
 install_self() {
   local bin_dir target source
   bin_dir="${HOME}/.local/bin"
-  target="${bin_dir}/bot-pr"
+  target="${bin_dir}/botlab"
   source="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)/$(basename "${BASH_SOURCE[0]}")"
 
   mkdir -p "$bin_dir"
   ln -sf "$source" "$target"
   echo "Installed: ${target}"
-  echo "If bot-pr is not found, add this to PATH: ${bin_dir}"
+  echo "If botlab is not found, add this to PATH: ${bin_dir}"
 }
 
 install_coauthor_hook() {
@@ -79,7 +85,7 @@ install_coauthor_hook() {
   hook="${git_dir}/hooks/prepare-commit-msg"
   trailer="Co-authored-by: ${COAUTHOR_NAME} <${COAUTHOR_EMAIL}>"
 
-  if [ -f "$hook" ] && ! grep -q "bot-pr coauthor hook" "$hook"; then
+  if [ -f "$hook" ] && ! grep -q "botlab coauthor hook" "$hook"; then
     die "prepare-commit-msg hook already exists; merge this manually: ${hook}"
   fi
 
@@ -87,7 +93,7 @@ install_coauthor_hook() {
 #!/usr/bin/env bash
 set -euo pipefail
 
-# bot-pr coauthor hook
+# botlab coauthor hook
 trailer='${trailer}'
 msg_file="\$1"
 
@@ -102,6 +108,16 @@ EOF
   chmod +x "$hook"
   echo "Installed co-author hook: ${hook}"
   echo "${trailer}"
+}
+
+print_version() {
+  cat <<VERSION_INFO
+Name:        botlab
+Version:     ${VERSION}
+Description: ${DESCRIPTION}
+Author:      ${AUTHOR}
+License:     ${LICENSE}
+VERSION_INFO
 }
 
 main() {
@@ -128,6 +144,9 @@ main() {
       ;;
     install)
       install_self
+      ;;
+    version|--version|-V)
+      print_version
       ;;
     ""|-h|--help|help)
       usage

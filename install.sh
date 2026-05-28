@@ -1,11 +1,11 @@
 #!/usr/bin/env sh
 set -eu
 
-project_name="bot-pr"
+project_name="botlab"
 default_repo="shravangoswami-bot/bot-lab"
 
-repo="${BOT_PR_REPO:-$default_repo}"
-version="${BOT_PR_VERSION:-latest}"
+repo="${BOTLAB_REPO:-$default_repo}"
+version="${BOTLAB_VERSION:-latest}"
 bin_dir="${BIN_DIR:-$HOME/.local/bin}"
 shell_name="auto"
 profile_path=""
@@ -24,9 +24,9 @@ has() {
 
 usage() {
     cat <<USAGE
-bot-pr installer
+botlab installer
 
-Downloads bot-pr from GitHub Releases.
+Downloads botlab from GitHub Releases.
 Re-run this script later to update.
 
 Usage:
@@ -42,8 +42,8 @@ Options:
   -h, --help                  Print help
 
 Environment:
-  BOT_PR_REPO       Default GitHub repository
-  BOT_PR_VERSION    Default release version
+  BOTLAB_REPO       Default GitHub repository
+  BOTLAB_VERSION    Default release version
   BIN_DIR           Default install directory
 USAGE
 }
@@ -191,7 +191,7 @@ update_profile() {
     [ -n "$profile" ] || return 0
 
     mkdir -p "$(profile_dirname "$profile")"
-    if [ -f "$profile" ] && grep -q "# >>> bot-pr >>>" "$profile"; then
+    if [ -f "$profile" ] && grep -q "# >>> botlab >>>" "$profile"; then
         profile_updated="$profile"
         return 0
     fi
@@ -199,10 +199,10 @@ update_profile() {
     escaped_bin_dir="$(escape_double_quotes "$bin_dir")"
     {
         printf '\n'
-        printf '%s\n' '# >>> bot-pr >>>'
-        printf '%s\n' '# Added by the bot-pr installer. Remove with: uninstall.sh'
+        printf '%s\n' '# >>> botlab >>>'
+        printf '%s\n' '# Added by the botlab installer. Remove with: uninstall.sh'
         printf 'export PATH="%s:$PATH"\n' "$escaped_bin_dir"
-        printf '%s\n' '# <<< bot-pr <<<'
+        printf '%s\n' '# <<< botlab <<<'
     } >> "$profile"
 
     profile_updated="$profile"
@@ -211,9 +211,9 @@ update_profile() {
 print_summary() {
     printf '\n'
     if [ -n "$is_update" ]; then
-        printf '%s\n' "bot-pr is updated."
+        printf '%s\n' "botlab is updated."
     else
-        printf '%s\n' "bot-pr is installed."
+        printf '%s\n' "botlab is installed."
     fi
     printf '\n'
     printf '  Binary:  %s\n' "$bin_dir/$project_name"
@@ -240,14 +240,15 @@ print_summary() {
     printf '\n'
     printf '%s\n' "Verify:"
     printf '\n'
-    printf '%s\n' "  bot-pr gh auth status"
+    printf '%s\n' "  botlab gh auth status"
+    printf '%s\n' "  botlab --version"
     printf '\n'
 }
 
 tmp="$(mktemp)"
 trap 'rm -f "$tmp"' EXIT
 
-printf '%s\n' "Installing bot-pr from $repo ($version)"
+printf '%s\n' "Installing botlab from $repo ($version)"
 download "$tmp" "$(release_url "$project_name")"
 
 mkdir -p "$bin_dir"
@@ -256,6 +257,10 @@ if [ -f "$bin_dir/$project_name" ]; then
 fi
 cp "$tmp" "$bin_dir/$project_name"
 chmod +x "$bin_dir/$project_name"
+
+if [ -f "$bin_dir/bot-pr" ]; then
+    rm -f "$bin_dir/bot-pr"
+fi
 
 selected_shell="$(detect_shell)"
 update_profile "$selected_shell"
