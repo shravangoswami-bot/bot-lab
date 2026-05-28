@@ -10,7 +10,7 @@ The script keeps bot GitHub CLI config in `~/.config/bot-pr/gh`. Git stays norma
 curl -fsSL https://github.com/shravangoswami-bot/bot-lab/releases/latest/download/install.sh | sh
 ```
 
-Re-run the same command later to update. Make sure `~/.local/bin` is in `PATH`.
+Re-run the same command later to update. The installer adds `~/.local/bin` to your shell profile when needed.
 
 For local development:
 
@@ -23,8 +23,8 @@ scripts/bot-pr install
 ```bash
 cd /home/seeker/Work/vectorly-ai/bot-lab
 
-bot-pr auth
-bot-pr auth status
+bot-pr gh auth login
+bot-pr gh auth status
 bot-pr gh repo fork OWNER/REPO --clone=true
 ```
 
@@ -61,7 +61,7 @@ bot-pr git push origin branch-name
 
 Use this flow when asked to contribute from the bot account:
 
-1. Run `bot-pr auth status`.
+1. Run `bot-pr gh auth status`.
 2. Fork or clone using `bot-pr gh ...`.
 3. Run `bot-pr identity` inside the cloned repo.
 4. Run `bot-pr coauthor-hook` inside the cloned repo.
@@ -80,6 +80,7 @@ Co-authored-by: shravanngoswamii <shravanngoswamii@users.noreply.github.com>
 ## Example
 
 ```bash
+bot-pr gh auth status
 bot-pr gh repo fork TuringLang/AbstractMCMC.jl --clone=true
 cd AbstractMCMC.jl
 bot-pr identity
