@@ -12,6 +12,12 @@ curl -fsSL https://github.com/shravangoswami-bot/bot-lab/releases/latest/downloa
 
 Re-run the same command later to update. The installer adds `~/.local/bin` to your shell profile when needed.
 
+Uninstall:
+
+```bash
+curl -fsSL https://github.com/shravangoswami-bot/bot-lab/releases/latest/download/uninstall.sh | sh
+```
+
 For local development:
 
 ```bash
@@ -39,6 +45,13 @@ git checkout -b branch-name
 git add .
 git commit -m "Update files"
 botlab git push origin branch-name
+```
+
+Undo repo-local bot settings:
+
+```bash
+botlab unidentity
+botlab remove-coauthor-hook
 ```
 
 Open the PR with bot-scoped `gh`:
@@ -79,6 +92,22 @@ For commits, use the bot as author and add this trailer when useful:
 Co-authored-by: shravanngoswamii <shravanngoswamii@users.noreply.github.com>
 ```
 
+For one bot-authored commit without changing repo config:
+
+```bash
+git -c user.name="shravangoswami-bot" \
+    -c user.email="shravangoswami-bot@users.noreply.github.com" \
+    commit -m "Update files" \
+    -m "Co-authored-by: shravanngoswamii <shravanngoswamii@users.noreply.github.com>"
+```
+
+For one normal commit with the bot as co-author:
+
+```bash
+git commit -m "Update files" \
+  -m "Co-authored-by: shravangoswami-bot <shravangoswami-bot@users.noreply.github.com>"
+```
+
 ## Example
 
 ```bash
@@ -114,3 +143,7 @@ export GH_CONFIG_DIR=~/.config/botlab/gh
 ## Release
 
 Update `package.json` version and push to `main`. The release workflow creates a tag and publishes the install assets.
+
+## License
+
+[MIT](LICENSE)

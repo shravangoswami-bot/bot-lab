@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-VERSION="0.2.0"
+VERSION="0.2.1"
 DESCRIPTION="Tiny local helper for GitHub bot account PRs."
 AUTHOR="Shravan Goswami"
 LICENSE="MIT"
@@ -20,7 +20,9 @@ Usage:
   ${PROG} gh <gh args...>
   ${PROG} git <git args...>
   ${PROG} identity
+  ${PROG} unidentity
   ${PROG} coauthor-hook
+  ${PROG} remove-coauthor-hook
   ${PROG} install
   ${PROG} version
 
@@ -63,6 +65,14 @@ set_identity() {
   echo "Git identity set for this repo:"
   git config user.name
   git config user.email
+}
+
+unset_identity() {
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || die "run this inside a git repo"
+  git config --unset user.name >/dev/null 2>&1 || true
+  git config --unset user.email >/dev/null 2>&1 || true
+  echo "Repo-local git identity removed."
+  echo "Git will now use your global identity unless this repo has another override."
 }
 
 install_self() {
@@ -110,6 +120,26 @@ EOF
   echo "${trailer}"
 }
 
+remove_coauthor_hook() {
+  local git_dir hook
+  git rev-parse --is-inside-work-tree >/dev/null 2>&1 || die "run this inside a git repo"
+
+  git_dir="$(git rev-parse --git-dir)"
+  hook="${git_dir}/hooks/prepare-commit-msg"
+
+  if [ ! -f "$hook" ]; then
+    echo "No prepare-commit-msg hook found."
+    return
+  fi
+
+  if ! grep -q "botlab coauthor hook" "$hook"; then
+    die "prepare-commit-msg hook exists but was not created by botlab: ${hook}"
+  fi
+
+  rm -f "$hook"
+  echo "Removed co-author hook: ${hook}"
+}
+
 print_version() {
   cat <<VERSION_INFO
 Name:        botlab
@@ -138,9 +168,17 @@ main() {
       need git
       set_identity
       ;;
+    unidentity)
+      need git
+      unset_identity
+      ;;
     coauthor-hook)
       need git
       install_coauthor_hook
+      ;;
+    remove-coauthor-hook)
+      need git
+      remove_coauthor_hook
       ;;
     install)
       install_self
